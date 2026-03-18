@@ -192,11 +192,16 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-## 👤 Author
+## 👥 Author & Collaborators
 
-**Jishnu Thacker**
-
+**Jishnu Thacker** (Project Lead)
 - GitHub: [@jishnuthacker](https://github.com/jishnuthacker)
+
+**Rikin Parekh** (Collaborator)
+- GitHub: [@RikinParekh15147](https://github.com/RikinParekh15147)
+
+**Shlok Patel** (Collaborator)
+- GitHub: [@ShlokPatel27](https://github.com/ShlokPatel27)
 
 ---
 
