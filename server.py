@@ -106,7 +106,8 @@ class GAHandler(SimpleHTTPRequestHandler):
                 raise Exception("gspread library is not installed on the server.")
                 
             if not os.path.exists("credentials.json"):
-                raise Exception("Missing credentials.json for Google Sheets API authentication.")
+                raise Exception("Missing credentials.json for Google Sheets API authentication. "
+                                "Please refer to GOOGLE_SHEETS_SETUP.md in the project root for instructions on how to get it.")
             
             # Authenticate
             scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
