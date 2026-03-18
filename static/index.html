@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Timetable Scheduler — Genetic Algorithm</title>
+  <meta name="description" content="Generate conflict-free course timetables using a Genetic Algorithm. Visualise schedules, convergence plots, and GA configuration in real time." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ─── HERO ─────────────────────────────────────────────────────── -->
+  <header class="hero">
+    <div class="hero__glow"></div>
+    <h1 class="hero__title">
+      <span class="hero__icon">🧬</span>
+      Timetable <span class="gradient-text">Scheduler</span>
+    </h1>
+    <p class="hero__sub">Conflict-free course scheduling powered by a Genetic&nbsp;Algorithm</p>
+    <button id="btn-run" class="btn-primary">
+      <span class="btn-primary__text">Generate Timetable</span>
+      <span class="btn-primary__loader" hidden></span>
+    </button>
+  </header>
+
+  <!-- ─── CONFIGURATION FORM ───────────────────────────────────────── -->
+  <section id="config-form" class="results" style="padding-bottom: 24px;">
+    <div class="panel">
+      <h2 class="panel__heading">⚙️ Data Configuration</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="input-days">Available Days (comma-separated)</label>
+          <input type="text" id="input-days" class="input-control" value="Mon, Tue, Wed, Thu, Fri">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="input-slots">Time Slots per day (comma-separated)</label>
+          <input type="text" id="input-slots" class="input-control" value="8-9, 9-10, 10-11, 11-12, 1-2, 2-3, 3-4">
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label" for="input-courses">Courses (Format: Name, Professor, Branch, Division, Capacity) - One per line</label>
+          <textarea id="input-courses" class="input-control" rows="10">
+Math 101, Prof. Smith, Computer Science, Div A, 30
+Math 101, Prof. Smith, Computer Science, Div B, 30
+Physics 201, Prof. Johnson, ICT, Div A, 25
+Physics 201, Prof. Johnson, ICT, Div B, 25
+CS 301, Prof. Smith, Computer Science, Div A, 35
+English 101, Prof. Davis, General Science, Div A, 40
+History 202, Prof. Johnson, General Science, Div B, 20
+Chemistry 101, Prof. White, ICT, Div A, 30
+Biology 101, Prof. Green, General Science, Div A, 40
+Art 101, Prof. Black, Computer Science, Div B, 20</textarea>
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label" for="input-rooms">Rooms (Format: Name, Capacity) - One per line</label>
+          <textarea id="input-rooms" class="input-control" rows="5">
+Room 1, 30
+Room 2, 40
+Room 3, 25
+Auditorium A, 100
+Lab 1, 20</textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── MAIN CONTENT ─────────────────────────────────────────────── -->
+  <main id="results" class="results" hidden>
+
+    <!-- Stats bar -->
+    <section class="stats-bar">
+      <div class="stat-card" id="stat-gen">
+        <span class="stat-card__label">Generations</span>
+        <span class="stat-card__value">—</span>
+      </div>
+      <div class="stat-card" id="stat-violations">
+        <span class="stat-card__label">Violations</span>
+        <span class="stat-card__value">—</span>
+      </div>
+      <div class="stat-card" id="stat-courses">
+        <span class="stat-card__label">Courses</span>
+        <span class="stat-card__value">—</span>
+      </div>
+      <div class="stat-card" id="stat-status">
+        <span class="stat-card__label">Status</span>
+        <span class="stat-card__value">—</span>
+      </div>
+    </section>
+
+    <!-- Timetable grid -->
+    <section class="panel">
+      <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <h2 class="panel__heading" style="margin-bottom: 0;">📅 Timetable Grid</h2>
+        <div>
+          <button class="btn btn-secondary" id="btn-export">
+            📝 Download CSV
+          </button>
+          <button class="btn btn-secondary" id="btn-share-link">
+            🔗 Share Link
+          </button>
+          <button class="btn btn-secondary" id="btn-share">
+            <span class="btn-primary__text">🌐 Create Google Sheet</span>
+            <span class="btn-primary__loader" hidden></span>
+          </button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="timetable" class="timetable"></table>
+      </div>
+    </section>
+
+    <!-- Schedule detail list -->
+    <section class="panel">
+      <h2 class="panel__heading">📋 Schedule Detail</h2>
+      <div class="table-wrap">
+        <table id="schedule-detail" class="detail-table">
+          <thead>
+            <tr>
+              <th>Course</th><th>Professor</th><th>Branch</th><th>Division</th>
+              <th>Room</th><th>Time Slot</th><th>Capacity</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Fitness chart -->
+    <section class="panel">
+      <h2 class="panel__heading">📈 Convergence Plot</h2>
+      <canvas id="chart" height="260"></canvas>
+    </section>
+
+    <!-- GA Config -->
+    <section class="panel">
+      <h2 class="panel__heading">⚙️ GA Configuration</h2>
+      <div class="config-grid" id="config-grid"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Built with Python &amp; a Genetic Algorithm &nbsp;·&nbsp; 2026
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

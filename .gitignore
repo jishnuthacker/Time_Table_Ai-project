@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+env/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+server_debug.log
+server_error.log
+
+# Generated files
+fitness_convergence.png
+
+# Google credentials (sensitive)
+credentials.json
+
+# OS files
+.DS_Store
+Thumbs.db
