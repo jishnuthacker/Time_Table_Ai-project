@@ -31,5 +31,23 @@ To enable the "Create Google Sheet" feature in the Timetable Scheduler, you need
 2.  Restart the application (`python server.py`).
 
 ---
+
+## 🛠️ Troubleshooting: "Drive storage quota has been exceeded" (403 Error)
+
+This common error occurs because Google Service Accounts have **0 bytes of storage** by default. To fix this:
+
+### Option A: Use a Target Folder (Recommended)
+1.  **Create a folder** in your own Google Drive.
+2.  **Share the folder** with your Service Account email (found in `credentials.json`) as an **Editor**.
+3.  **Copy the Folder ID** from the URL (the string after `/folders/`).
+4.  Paste this ID into the **Target Folder ID** field in the Timetable Grid settings before clicking "Create Google Sheet".
+
+### Option B: Use an Existing Spreadsheet
+1.  **Create a Google Sheet** manually.
+2.  **Share the sheet** with your Service Account email as an **Editor**.
+3.  **Copy the Spreadsheet ID** from the URL (the string between `/d/` and `/edit`).
+4.  Paste this ID into the **Existing Spreadsheet ID** field in the settings.
+
+---
 > [!NOTE]
-> The application will automatically use this file to authenticate and create private Google Sheets, which will then be shared with "Anyone with the link can view".
+> The application will automatically use these settings to bypass quota limits by leveraging your own account's storage.

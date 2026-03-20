@@ -91,6 +91,27 @@ Lab 1, 20</textarea>
 
     <!-- Timetable grid -->
     <section class="panel">
+      <!-- Google Sheets Settings -->
+      <div id="sheets-settings" style="background: rgba(108,92,231,0.05); padding: 18px; margin-bottom: 24px; border-radius: 12px; border: 1px solid var(--accent); box-shadow: 0 4px 12px rgba(108,92,231,0.1);">
+        <h3 style="font-size: 0.95rem; margin-bottom: 14px; color: var(--accent-2); display: flex; align-items: center; gap: 8px; font-weight: 700;">
+          <span>🛠️ REQUIRED: Google Sheets Export Fix</span>
+          <span style="font-size: 0.75rem; font-weight: 500; background: var(--accent); color: white; padding: 2px 8px; border-radius: 4px;">For 403 Errors</span>
+        </h3>
+        <p style="font-size: 0.82rem; color: var(--text-dim); margin-bottom: 12px; line-height: 1.4;">
+          If you get a "Quota Exceeded" error, please <b>create a sheet</b>, share it with the service account mail from <code>GOOGLE_SHEETS_SETUP.md</code>, and paste its <b>ID or URL</b> below.
+        </p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.78rem; color: var(--text);" for="input-spreadsheet-id">Existing Spreadsheet ID or URL</label>
+            <input type="text" id="input-spreadsheet-id" class="input-control" style="font-size: 0.88rem; border-color: rgba(108,92,231,0.3);" placeholder="Paste your Sheet URL here...">
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.78rem; opacity: 0.7;" for="input-folder-id">Target Folder ID (Optional)</label>
+            <input type="text" id="input-folder-id" class="input-control" style="font-size: 0.88rem; opacity: 0.7;" placeholder="Paste Folder URL here...">
+          </div>
+        </div>
+      </div>
+
       <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
         <h2 class="panel__heading" style="margin-bottom: 0;">📅 Timetable Grid</h2>
         <div>
@@ -106,6 +127,7 @@ Lab 1, 20</textarea>
           </button>
         </div>
       </div>
+
       <div class="table-wrap">
         <table id="timetable" class="timetable"></table>
       </div>
@@ -144,6 +166,6 @@ Lab 1, 20</textarea>
     Built with Python &amp; a Genetic Algorithm &nbsp;·&nbsp; 2026
   </footer>
 
-  <script src="script.js"></script>
+  <script src="script.js?v=1.1"></script>
 </body>
 </html>

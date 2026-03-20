@@ -11,6 +11,7 @@ let lastData = null; // Store the last generated data for sharing
 
 /* ── Initialization (Check for Shared Link) ────────────────────── */
 window.addEventListener("DOMContentLoaded", () => {
+  console.log("Timetable GA v1.1 script loaded.");
   const params = new URLSearchParams(window.location.search);
   const sharedData = params.get("data");
   if (sharedData) {
@@ -21,6 +22,16 @@ window.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       alert("Invalid or corrupted share link.");
     }
+  }
+
+  // Restore Google Sheets settings
+  const folderId = localStorage.getItem("ga_folder_id");
+  const spreadsheetId = localStorage.getItem("ga_spreadsheet_id");
+  if (folderId && document.getElementById("input-folder-id")) {
+    document.getElementById("input-folder-id").value = folderId;
+  }
+  if (spreadsheetId && document.getElementById("input-spreadsheet-id")) {
+    document.getElementById("input-spreadsheet-id").value = spreadsheetId;
   }
 });
 
@@ -123,7 +134,30 @@ document.getElementById("btn-share").addEventListener("click", async () => {
       csv_rows.push(row);
     }
 
-    const payload = { rows: csv_rows };
+    function extractId(val) {
+      if (!val) return null;
+      // Extract ID from URL if necessary
+      // Spreadsheet URL: /d/ID/
+      // Folder URL: /folders/ID
+      const sMatch = val.match(/\/d\/([a-zA-Z0-9-_]+)/);
+      if (sMatch) return sMatch[1];
+      const fMatch = val.match(/\/folders\/([a-zA-Z0-9-_]+)/);
+      if (fMatch) return fMatch[1];
+      return val.trim();
+    }
+
+    const folder_id = extractId(document.getElementById("input-folder-id")?.value);
+    const spreadsheet_id = extractId(document.getElementById("input-spreadsheet-id")?.value);
+
+    // Save to localStorage
+    if (folder_id) localStorage.setItem("ga_folder_id", folder_id);
+    if (spreadsheet_id) localStorage.setItem("ga_spreadsheet_id", spreadsheet_id);
+
+    const payload = { 
+      rows: csv_rows,
+      folder_id,
+      spreadsheet_id
+    };
 
     const res = await fetch("/api/export_google_sheets", {
       method: "POST",
