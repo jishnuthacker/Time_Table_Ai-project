@@ -32,14 +32,16 @@ An AI-powered **university course timetable generator** that uses a **Genetic Al
 
 ```
 📦 Time_Table_Ai-project/
-├── server.py            # Python HTTP server (serves UI + exposes /api/run)
-├── timetable_ga.py      # Core Genetic Algorithm engine
-├── __init__.py          # Python package marker
+├── server.py                  # Python HTTP server (serves UI + exposes /api/run)
+├── timetable_ga.py            # Core Genetic Algorithm engine
+├── __init__.py                # Python package marker
+├── credentials.json.example   # Template for Google Sheets API credentials
+├── GOOGLE_SHEETS_SETUP.md     # Detailed Google Sheets setup guide
 ├── static/
-│   ├── index.html       # Web UI — main page
-│   ├── style.css        # Styling (glassmorphism, gradients, animations)
-│   └── script.js        # Frontend logic (API calls, chart rendering, exports)
-├── requirements.txt     # Python dependencies
+│   ├── index.html             # Web UI — main page
+│   ├── style.css              # Styling (dark navy theme, animations)
+│   └── script.js              # Frontend logic (API calls, chart, exports)
+├── requirements.txt           # Python dependencies
 ├── .gitignore
 └── README.md
 ```
@@ -150,17 +152,46 @@ The web UI allows you to customise:
 
 ---
 
-## 📦 Optional: Google Sheets Export
+## 📦 Google Sheets Export
 
-To enable the "Create Google Sheet" feature:
+Export your generated timetable directly to Google Sheets for easy sharing with faculty and students.
 
-1. Create a **Google Cloud Service Account** with the Sheets & Drive APIs enabled.
-2. Download the `credentials.json` file and place it in the project root.
-3. Install the optional dependencies:
+### Quick Setup (Recommended)
+
+1. **Create a Google Sheet** in your Google Drive (or use an existing one).
+2. **Share the sheet** with the following service account email as **Editor**:
+
+   ```
+   timetable@eloquent-clover-435616-m1.iam.gserviceaccount.com
+   ```
+
+3. **Copy the sheet URL** (e.g., `https://docs.google.com/spreadsheets/d/abc123.../edit`).
+4. **Paste the URL** into the **"Google Spreadsheet Link"** field in the app's configuration panel (Step 05).
+5. **Generate your timetable**, then click the **"Google Sheets"** button in the results panel to export.
+
+### Install Required Libraries
 
 ```bash
 pip install gspread google-auth
 ```
+
+### Credentials Setup
+
+If you're setting up your own service account:
+
+1. Create a **Google Cloud Project** and enable the **Google Sheets API** and **Google Drive API**.
+2. Create a **Service Account** and download the JSON key file.
+3. Rename it to `credentials.json` and place it in the project root folder.
+
+> See [`GOOGLE_SHEETS_SETUP.md`](GOOGLE_SHEETS_SETUP.md) for the full, detailed guide.
+
+### Troubleshooting
+
+| Problem | Solution |
+|---|---|
+| **"Drive storage quota exceeded"** | Service accounts have 0 GB storage. Always paste an **existing** spreadsheet link shared with the service account — don't rely on auto-creation. |
+| **"Invalid argument" error** | Make sure you pasted the full Google Sheet URL (not a folder URL) in the Spreadsheet Link field. |
+| **Sheet not updating** | Verify the sheet is shared with `timetable@eloquent-clover-435616-m1.iam.gserviceaccount.com` as **Editor**. |
 
 ---
 
