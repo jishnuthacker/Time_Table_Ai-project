@@ -1,10 +1,10 @@
-# 🧬 Timetable Scheduler - Genetic Algorithm
+# 🧬 TimetableAI — College Scheduler
 
-An AI-powered **university course timetable generator** that uses a **Genetic Algorithm (GA)** to produce conflict-free schedules. It features a modern web interface for configuring inputs, visualizing results, and exporting schedules.
+An AI-powered **university course timetable generator** that uses a **Genetic Algorithm (GA)** to produce optimal, conflict-free schedules. Now professionally restructured for **One-Click Cloud Deployment** on Vercel.
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![JS](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 
 ---
 
@@ -12,20 +12,23 @@ An AI-powered **university course timetable generator** that uses a **Genetic Al
 
 | Feature | Description |
 |---|---|
-| **Theory & Lab Split** | Intelligent handling of 1-hour theory sessions and 2-hour lab blocks with custom durations. |
-| **Batch-wise Scheduling** | Automatically assigns labs to multiple batches while ensuring no student-group overlaps. |
-| **Dedicated Lab Rooms** | Strict enforcement of room-subject mapping for specialized laboratories. |
-| **Hard Constraint Satisfaction** | Zero room-time clashes, zero professor conflicts, and zero student-group overlaps. |
-| **Time Slot Preferences** | Optimization for "Morning Theory" and "Afternoon/Evening Labs" to match academic best practices. |
-| **Lunch Window** | Guarantees at least one free slot for students and faculty during specified break times. |
-| **Multi-View UI** | Visualize the timetable by Day, by Room, or by Batch with real-time filtering and sorting. |
-| **Exports** | Download results as CSV or push directly to a shared Google Spreadsheet. |
+| **Genetic Engine** | Advanced GA with tournament selection, elitism, and automated constraint repair. |
+| **Cloud Ready** | Deploy to **Vercel** in seconds with built-in Serverless Functions. |
+| **Google Sheets** | Export results directly to a shared spreadsheet for institutional use. |
+| **Hard Constraints** | Zero room-time clashes, professor double-booking, or student-group overlaps. |
+| **Soft Optimizations** | Lunch window windows, faculty gap minimization, and time preferences. |
+| **Modular UI** | Beautiful, dark-themed interface with real-time status pills and charts. |
 
 ---
 
-## 🖼️ Screenshots
+## 🚀 Deployment (Vercel)
 
-> Run the app locally and open `http://localhost:8080` to see the UI.
+The project is now optimized for **Vercel Serverless Functions**.
+
+1.  **Fork/Clone** this repository to your GitHub account.
+2.  Go to the [Vercel Dashboard](https://vercel.com/new) and **Import** this project.
+3.  **(Optional but Recommended)**: Add your `credentials.json` content as an Environment Variable named `GOOGLE_CREDENTIALS_JSON` for secure Google Sheets exports.
+4.  **Deploy!** Vercel handles the Python backend and HTML frontend automatically.
 
 ---
 
@@ -33,210 +36,60 @@ An AI-powered **university course timetable generator** that uses a **Genetic Al
 
 ```
 📦 Time_Table_Ai-project/
-├── server.py                  # Python HTTP server (serves UI + exposes /api/run)
-├── timetable_ga.py            # Core Genetic Algorithm engine
-├── __init__.py                # Python package marker
-├── credentials.json.example   # Template for Google Sheets API credentials
-├── GOOGLE_SHEETS_SETUP.md     # Detailed Google Sheets setup guide
-├── static/
-│   ├── index.html             # Web UI — main page
-│   ├── style.css              # Styling (dark navy theme, animations)
-│   └── script.js              # Frontend logic (API calls, chart, exports)
-├── requirements.txt           # Python dependencies
-├── .gitignore
+├── api/
+│   ├── run.py                 # Serverless Function: GA Runner (/api/run)
+│   └── export_google_sheets.py # Serverless Function: Sheets Exporter
+├── index.html                 # Frontend: Main UI
+├── script.js                  # Frontend: Logic & API Integration
+├── style.css                  # Frontend: Premium Dark Theme
+├── timetable_ga.py            # Core: Genetic Algorithm Engine
+├── vercel.json                # Vercel: Routing & Runtime Config
+├── server.py                  # Local: Standard Library Dev Server
+├── requirements.txt           # Deps: gspread, google-auth
+├── credentials.json           # Local only: Google API access (Ignored by Git)
 └── README.md
 ```
 
 ---
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-- **Python 3.8+** installed on your system.
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/jishnuthacker/Time_Table_Ai-project.git
-cd Time_Table_Ai-project
-```
-
-### 2. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Run the Server
-
-```bash
-python server.py
-```
-
-### 4. Open in Browser
-
-Navigate to **[http://localhost:8080](http://localhost:8080)** in your browser.
-
----
-
 ## ⚙️ How It Works
 
-### Genetic Algorithm Overview
-
-```
-┌──────────────┐
-│  Initialize   │  Random population of candidate schedules
-│  Population   │
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│   Evaluate    │  Fitness = -(hard penalties) + soft score
-│   Fitness     │
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│  Selection    │  Tournament selection (top-k)
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│  Crossover    │  Single-point crossover between parents
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│  Mutation     │  Random gene mutation (room + timeslot)
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│  Converged?   │──No──▶ Loop back to Evaluate
-└──────┬───────┘
-       │ Yes
-       ▼
-   Best Schedule
-```
-
-### Constraints
-
-**Hard Constraints** (Satisfied by best solutions):
-- **Conflict-Free**: No overlapping sessions for the same room, professor, or student batch.
-- **Duration Enforce**: Lab sessions are strictly 2-hour consecutive blocks.
-- **Dedicated Labs**: Lab sessions must occur in rooms specifically mapped to that subject.
-- **Room Segregation**: Theory courses are only placed in designated Theory Rooms.
-- **Boundary Checks**: No sessions can start or overflow past the day's time slots.
-- **Lunch Break**: At least one slot in the lunch window is guaranteed free.
-- **No Repeats**: A course cannot appear twice on the same day for the same batch.
-
-**Soft Constraints** (Optimised for quality):
-- **Morning Theory**: Preference for scheduling theory sessions in the first half of the day.
-- **Afternoon Labs**: Preference for scheduling lab sessions in the latter half.
-- **Idle Gap Reduction**: (Core logic) Minimising "dead time" for both students and faculty.
-- **Resource Efficiency**: Optimising seating utilization across theory rooms.
+### The Genetic Engine
+1.  **Initialize**: Randomly generates a population of 100+ candidate schedules.
+2.  **Evaluate**: Scores each schedule based on Hard Violations (penalties) and Soft Preferences (bonus).
+3.  **Evolve**: Uses **Tournament Selection** and **Single-Point Crossover** to combine the best "genes."
+4.  **Repair**: A specialized post-processing step fixes overlapping labs and room segregation errors.
+5.  **Converge**: Stops once a conflict-free (Fitness > 0) schedule is found or max generations are reached.
 
 ---
 
-## 🔧 Configuration
+## 🔧 Local Development
 
-The web UI is organized into 8 configuration sections:
-
-| Section | Description | Key Parameters |
-|---|---|---|
-| **01 Basics** | Core schedule structure | Working Days, Time Slots, Student Batches |
-| **02 Theory** | Standard classroom courses | Course Name, Faculty, Credits (hrs/week) |
-| **03 Labs** | Practical/Lab sessions | Lab Name, Faculty, Dedicated Room |
-| **04/05 Rooms** | Space management | Capacity for TheoryRooms; Subject-mapping for LabRooms |
-| **06 Constraints** | Quality of life settings | Lunch window bounds, Morning/Afternoon preferences |
-| **07 GA Engine** | Algorithm tuning | Pop Size (10-500), Max Generations, Mutation/Crossover rates |
-| **08 Export** | Integration settings | Google Spreadsheet URL, Service Account sharing |
-
----
-
-## 📦 Google Sheets Export
-
-Export your generated timetable directly to Google Sheets for easy sharing with faculty and students.
-
-### Quick Setup (Recommended)
-
-1. **Create a Google Sheet** in your Google Drive (or use an existing one).
-2. **Share the sheet** with the following service account email as **Editor**:
-
-   ```
-   timetable@eloquent-clover-435616-m1.iam.gserviceaccount.com
-   ```
-
-3. **Copy the sheet URL** (e.g., `https://docs.google.com/spreadsheets/d/abc123.../edit`).
-4. **Paste the URL** into the **"Google Spreadsheet URL"** field in the app's configuration panel (**Section 08**).
-5. **Generate your timetable**, then click the **"Export to Sheets"** button in the results panel to export.
-
-### Install Required Libraries
-
-```bash
-pip install gspread google-auth
-```
-
-### Credentials Setup
-
-If you're setting up your own service account:
-
-1. Create a **Google Cloud Project** and enable the **Google Sheets API** and **Google Drive API**.
-2. Create a **Service Account** and download the JSON key file.
-3. Rename it to `credentials.json` and place it in the project root folder.
-
-> See [`GOOGLE_SHEETS_SETUP.md`](GOOGLE_SHEETS_SETUP.md) for the full, detailed guide.
-
-### Troubleshooting
-
-| Problem | Solution |
-|---|---|
-| **"Drive storage quota exceeded"** | Service accounts have 0 GB storage. Always paste an **existing** spreadsheet link shared with the service account — don't rely on auto-creation. |
-| **"Invalid argument" error** | Make sure you pasted the full Google Sheet URL (not a folder URL) in the Spreadsheet Link field. |
-| **Sheet not updating** | Verify the sheet is shared with `timetable@eloquent-clover-435616-m1.iam.gserviceaccount.com` as **Editor**. |
+1.  **Clone & Install**:
+    ```bash
+    git clone https://github.com/jishnuthacker/Time_Table_Ai-project.git
+    pip install -r requirements.txt
+    ```
+2.  **Run Locally**:
+    ```bash
+    python server.py
+    ```
+3.  **Access**: Open `http://localhost:8080`.
 
 ---
 
-## 🛠️ Tech Stack
+## 📊 Google Sheets Integration
 
-- **Backend**: Python 3 (standard library `http.server` — no frameworks needed)
-- **AI/Algorithm**: Custom Genetic Algorithm implementation
-- **Frontend**: Vanilla HTML, CSS, JavaScript
-- **Charting**: Canvas-based convergence plots
-- **Fonts**: Inter & JetBrains Mono (Google Fonts)
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to open issues or submit pull requests.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1.  Create a Google Sheet.
+2.  Share it with `timetable@eloquent-clover-435616-m1.iam.gserviceaccount.com` as **Editor**.
+3.  Paste the Sheet URL in Section 08 of the app.
+4.  Export after generating!
 
 ---
 
-## 📄 License
+## 👥 Authors
+- **Jishnu Thacker** — [@jishnuthacker](https://github.com/jishnuthacker)
+- **Rikin Parekh** — [@RikinParekh15147](https://github.com/RikinParekh15147)
+- **Shlok Patel** — [@ShlokPatel27](https://github.com/ShlokPatel27)
 
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
-## 👥 Author & Collaborators
-
-**Jishnu Thacker** (Project Lead)
-- GitHub: [@jishnuthacker](https://github.com/jishnuthacker)
-
-**Rikin Parekh** (Collaborator)
-- GitHub: [@RikinParekh15147](https://github.com/RikinParekh15147)
-
-**Shlok Patel** (Collaborator)
-- GitHub: [@ShlokPatel27](https://github.com/ShlokPatel27)
-
----
-
-<p align="center">Made with ❤️ and Genetic Algorithms</p>
+<p align="center">Made with ❤️ and AI</p>
