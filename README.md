@@ -28,7 +28,7 @@ The project is now optimized for **Vercel Serverless Functions**.
 1.  **Fork/Clone** this repository to your GitHub account.
 2.  Go to the [Vercel Dashboard](https://vercel.com/new) and **Import** this project.
 3.  **(Optional but Recommended)**: Add your `credentials.json` content as an Environment Variable named `GOOGLE_CREDENTIALS_JSON` for secure Google Sheets exports.
-4.  **Deploy!** Vercel handles the Python backend and HTML frontend automatically.
+4.  **Deploy!** Vercel handles the Python backend (`api/`) and HTML frontend (`public/`) automatically.
 
 ---
 
@@ -36,16 +36,18 @@ The project is now optimized for **Vercel Serverless Functions**.
 
 ```
 📦 Time_Table_Ai-project/
-├── api/
-│   ├── run.py                 # Serverless Function: GA Runner (/api/run)
-│   └── export_google_sheets.py # Serverless Function: Sheets Exporter
-├── index.html                 # Frontend: Main UI
-├── script.js                  # Frontend: Logic & API Integration
-├── server_local.py            # Local Dev: Standard Library Server
-├── timetable_ga.py            # Core: Genetic Algorithm Engine
-├── vercel.json                # Vercel: Routing & Build Config
-├── requirements.txt           # Deps: gspread, google-auth
-├── credentials.json           # Local only: Google API access (Ignored by Git)
+├── api/                       # Backend (Vercel Functions)
+│   ├── index.py               # GA Runner (/api/run)
+│   ├── export_google_sheets.py # Sheets Exporter
+│   └── requirements.txt       # Dependencies
+├── public/                    # Frontend Assets (Static)
+│   ├── index.html             # UI Main Code
+│   ├── script.js              # UI Logic
+│   └── style.css              # UI Theme
+├── timetable_ga.py            # Core GA Engine
+├── vercel.json                # Vercel Configuration
+├── server_local.py            # Local Dev Server
+├── credentials.json           # Local only: Google API keys
 └── README.md
 ```
 
@@ -67,22 +69,13 @@ The project is now optimized for **Vercel Serverless Functions**.
 1.  **Clone & Install**:
     ```bash
     git clone https://github.com/jishnuthacker/Time_Table_Ai-project.git
-    pip install -r requirements.txt
+    cd api/ && pip install -r requirements.txt && cd ..
     ```
 2.  **Run Locally**:
     ```bash
     python server_local.py
     ```
 3.  **Access**: Open `http://localhost:8080`.
-
----
-
-## 📊 Google Sheets Integration
-
-1.  Create a Google Sheet.
-2.  Share it with `timetable@eloquent-clover-435616-m1.iam.gserviceaccount.com` as **Editor**.
-3.  Paste the Sheet URL in Section 08 of the app.
-4.  Export after generating!
 
 ---
 

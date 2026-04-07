@@ -25,7 +25,7 @@ from timetable_ga import run_ga_api
 
 
 PORT = 8080
-STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public")
 
 
 class GAHandler(SimpleHTTPRequestHandler):
