@@ -681,16 +681,67 @@ function drawFallbackChart(ctx, canvas, history) {
   ctx.closePath(); ctx.fill();
 }
 
+// ── BUILD TIMETABLE GRID ROWS ─────────────────────────────────────────────────
+function buildTimetableGridRows(data) {
+  const schedule = data.schedule || [];
+  const days = data.days || [];
+  const slots = data.time_slots || [];
+  const batches = data.all_batches || batchList || [];
+  const allRows = [];
+
+  // ─── Helper: build a grid section for a given filter function ───
+  function buildSection(title, filterFn) {
+    // Title row
+    allRows.push([`═══ ${title} ═══`, ...days.map(() => '')]);
+    // Header row: Time | Mon | Tue | Wed | ...
+    allRows.push(['Time', ...days]);
+
+    slots.forEach(slot => {
+      const row = [slot];
+      days.forEach(day => {
+        const matches = schedule.filter(e =>
+          filterFn(e) && e.day === day && (e.time_label||'').startsWith(slot)
+        );
+        if (matches.length === 0) {
+          row.push('—');
+        } else {
+          const cellParts = matches.map(e => {
+            const parts = [e.course];
+            if (e.faculty) parts.push(e.faculty);
+            if (e.room)    parts.push(e.room);
+            if (e.type === 'lab' && e.time_label) parts.push(e.time_label);
+            return parts.join(' | ');
+          });
+          row.push(cellParts.join(' ; '));
+        }
+      });
+      allRows.push(row);
+    });
+
+    // Blank separator row
+    allRows.push(days.map(() => '').concat(''));
+  }
+
+  // ─── Section 1: Whole Division (Theory) ───
+  buildSection('WHOLE DIVISION (Theory)', e => e.type === 'theory');
+
+  // ─── Section 2+: Each Batch ───
+  batches.forEach(batch => {
+    buildSection(`${batch.toUpperCase()}`, e => {
+      if (e.type === 'theory') return true; // theory applies to all batches
+      return (e.batch || '').toLowerCase() === batch.toLowerCase();
+    });
+  });
+
+  return allRows;
+}
+
 // ── CSV EXPORT ────────────────────────────────────────────────────────────────
 document.getElementById('btn-export')?.addEventListener('click', () => {
   if (!lastResult) return;
-  const headers = ['Type','Course','Faculty','Batch','Day','Time','Room'];
-  const rows = (lastResult.schedule||[]).map(e => [
-    e.type, e.course, e.faculty,
-    e.batch||'Whole Division', e.day, e.time_label, e.room,
-  ]);
-  const csv = [headers,...rows].map(r =>
-    r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')
+  const rows = buildTimetableGridRows(lastResult);
+  const csv = rows.map(r =>
+    r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')
   ).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
@@ -709,16 +760,12 @@ document.getElementById('btn-share')?.addEventListener('click', async () => {
   const loadEl  = btn.querySelector('.btn-primary__loader');
   textEl.hidden = true; loadEl.hidden = false; btn.disabled = true;
 
-  const headers = ['Type','Course','Faculty','Batch','Day','Time','Room'];
-  const rows = (lastResult.schedule||[]).map(e => [
-    e.type, e.course, e.faculty,
-    e.batch||'Whole Division', e.day, e.time_label, e.room,
-  ]);
+  const rows = buildTimetableGridRows(lastResult);
   try {
     const res = await fetch('/api/export_google_sheets', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ rows:[headers,...rows], spreadsheet_id:ssId, folder_id:fldId }),
+      body: JSON.stringify({ rows, spreadsheet_id:ssId, folder_id:fldId }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error||`HTTP ${res.status}`);
