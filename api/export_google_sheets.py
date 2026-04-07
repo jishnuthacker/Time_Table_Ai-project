@@ -30,37 +30,54 @@ def _extract_id(value):
     return value
 
 def _format_worksheet(worksheet, rows):
-    """Apply professional formatting to a worksheet."""
+    """Apply professional formatting to a worksheet in minimal API calls."""
     num_rows = len(rows)
     if num_rows == 0:
         return
     num_cols = max(len(r) for r in rows) if rows else 1
     col_letter = chr(ord('A') + min(num_cols - 1, 25))
+    full_range = f"A1:{col_letter}{num_rows}"
 
-    # Center everything
-    worksheet.format(f"A1:{col_letter}{num_rows}", {
-        "horizontalAlignment": "CENTER",
-        "verticalAlignment": "MIDDLE",
-        "textFormat": {"fontSize": 10},
+    # Build all formatting in one batch call
+    formats = []
+
+    # 1. Center everything
+    formats.append({
+        "range": full_range,
+        "format": {
+            "horizontalAlignment": "CENTER",
+            "verticalAlignment": "MIDDLE",
+            "textFormat": {"fontSize": 10},
+        }
     })
 
-    # Format header row (row 1 = "Time | Mon | Tue ...")
-    worksheet.format(f"A1:{col_letter}1", {
-        "backgroundColor": {"red": 0.15, "green": 0.15, "blue": 0.45},
-        "textFormat": {
-            "foregroundColor": {"red": 1, "green": 1, "blue": 1},
-            "bold": True,
-            "fontSize": 11,
-        },
+    # 2. Navy header row
+    formats.append({
+        "range": f"A1:{col_letter}1",
+        "format": {
+            "backgroundColor": {"red": 0.15, "green": 0.15, "blue": 0.45},
+            "textFormat": {
+                "foregroundColor": {"red": 1, "green": 1, "blue": 1},
+                "bold": True,
+                "fontSize": 11,
+            },
+        }
     })
 
-    # Alternating row colors for data rows
+    # 3. Alternating row colors (batched)
     for i in range(1, num_rows):
         row_idx = i + 1
         if i % 2 == 0:
-            worksheet.format(f"A{row_idx}:{col_letter}{row_idx}", {
-                "backgroundColor": {"red": 0.95, "green": 0.96, "blue": 1.0}
+            formats.append({
+                "range": f"A{row_idx}:{col_letter}{row_idx}",
+                "format": {
+                    "backgroundColor": {"red": 0.95, "green": 0.96, "blue": 1.0}
+                }
             })
+
+    # Single API call for ALL formatting
+    worksheet.batch_format(formats)
+
 
 
 class handler(BaseHTTPRequestHandler):
