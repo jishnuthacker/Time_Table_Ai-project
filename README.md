@@ -12,13 +12,14 @@ An AI-powered **university course timetable generator** that uses a **Genetic Al
 
 | Feature | Description |
 |---|---|
-| **Genetic Algorithm Engine** | Evolves a population of candidate schedules over generations to find an optimal, conflict-free timetable. |
-| **Hard Constraint Satisfaction** | Guarantees no room-time clashes, no professor conflicts, and no student-group overlaps. |
-| **Soft Constraint Optimization** | Optimises for energy efficiency (room utilisation), minimises gaps for students & professors, and rewards consecutive class blocks. |
-| **Interactive Web UI** | A sleek, responsive dashboard to configure courses, rooms, time slots, and GA parameters — then visualise the results instantly. |
-| **Convergence Plot** | Real-time chart showing how constraint violations decrease across generations. |
-| **CSV Export** | Download the generated timetable as a CSV file. |
-| **Google Sheets Export** | (Optional) Push the timetable directly to a Google Sheet for easy sharing. |
+| **Theory & Lab Split** | Intelligent handling of 1-hour theory sessions and 2-hour lab blocks with custom durations. |
+| **Batch-wise Scheduling** | Automatically assigns labs to multiple batches while ensuring no student-group overlaps. |
+| **Dedicated Lab Rooms** | Strict enforcement of room-subject mapping for specialized laboratories. |
+| **Hard Constraint Satisfaction** | Zero room-time clashes, zero professor conflicts, and zero student-group overlaps. |
+| **Time Slot Preferences** | Optimization for "Morning Theory" and "Afternoon/Evening Labs" to match academic best practices. |
+| **Lunch Window** | Guarantees at least one free slot for students and faculty during specified break times. |
+| **Multi-View UI** | Visualize the timetable by Day, by Room, or by Batch with real-time filtering and sorting. |
+| **Exports** | Download results as CSV or push directly to a shared Google Spreadsheet. |
 
 ---
 
@@ -121,34 +122,36 @@ Navigate to **[http://localhost:8080](http://localhost:8080)** in your browser.
 
 ### Constraints
 
-**Hard Constraints** (must be satisfied):
-- No two courses in the same room at the same time
-- No professor teaching two courses simultaneously
-- No student group attending two courses at the same time
-- Room capacity must accommodate the course enrollment
+**Hard Constraints** (Satisfied by best solutions):
+- **Conflict-Free**: No overlapping sessions for the same room, professor, or student batch.
+- **Duration Enforce**: Lab sessions are strictly 2-hour consecutive blocks.
+- **Dedicated Labs**: Lab sessions must occur in rooms specifically mapped to that subject.
+- **Room Segregation**: Theory courses are only placed in designated Theory Rooms.
+- **Boundary Checks**: No sessions can start or overflow past the day's time slots.
+- **Lunch Break**: At least one slot in the lunch window is guaranteed free.
+- **No Repeats**: A course cannot appear twice on the same day for the same batch.
 
-**Soft Constraints** (optimised for quality):
-- Minimise idle gaps for students between classes
-- Minimise idle gaps for professors
-- Maximise room utilisation efficiency (energy savings)
-- Reward consecutive time blocks for the same course
+**Soft Constraints** (Optimised for quality):
+- **Morning Theory**: Preference for scheduling theory sessions in the first half of the day.
+- **Afternoon Labs**: Preference for scheduling lab sessions in the latter half.
+- **Idle Gap Reduction**: (Core logic) Minimising "dead time" for both students and faculty.
+- **Resource Efficiency**: Optimising seating utilization across theory rooms.
 
 ---
 
 ## 🔧 Configuration
 
-The web UI allows you to customise:
+The web UI is organized into 8 configuration sections:
 
-| Parameter | Default | Description |
+| Section | Description | Key Parameters |
 |---|---|---|
-| **Days** | Mon–Fri | Available scheduling days |
-| **Time Slots** | 7 per day | Time windows per day (e.g., 8-9, 9-10, …) |
-| **Courses** | 10 sample | Course name, professor, branch, division, capacity |
-| **Rooms** | 5 sample | Room name and seating capacity |
-| **Population Size** | 100 | Number of candidate schedules per generation |
-| **Mutation Rate** | 0.05 | Probability of random gene mutation |
-| **Crossover Rate** | 0.80 | Probability of crossover between parents |
-| **Max Generations** | 500 | Stopping criterion if no perfect solution found |
+| **01 Basics** | Core schedule structure | Working Days, Time Slots, Student Batches |
+| **02 Theory** | Standard classroom courses | Course Name, Faculty, Credits (hrs/week) |
+| **03 Labs** | Practical/Lab sessions | Lab Name, Faculty, Dedicated Room |
+| **04/05 Rooms** | Space management | Capacity for TheoryRooms; Subject-mapping for LabRooms |
+| **06 Constraints** | Quality of life settings | Lunch window bounds, Morning/Afternoon preferences |
+| **07 GA Engine** | Algorithm tuning | Pop Size (10-500), Max Generations, Mutation/Crossover rates |
+| **08 Export** | Integration settings | Google Spreadsheet URL, Service Account sharing |
 
 ---
 
@@ -166,8 +169,8 @@ Export your generated timetable directly to Google Sheets for easy sharing with 
    ```
 
 3. **Copy the sheet URL** (e.g., `https://docs.google.com/spreadsheets/d/abc123.../edit`).
-4. **Paste the URL** into the **"Google Spreadsheet Link"** field in the app's configuration panel (Step 05).
-5. **Generate your timetable**, then click the **"Google Sheets"** button in the results panel to export.
+4. **Paste the URL** into the **"Google Spreadsheet URL"** field in the app's configuration panel (**Section 08**).
+5. **Generate your timetable**, then click the **"Export to Sheets"** button in the results panel to export.
 
 ### Install Required Libraries
 
