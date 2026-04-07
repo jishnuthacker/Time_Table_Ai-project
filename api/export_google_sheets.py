@@ -36,14 +36,27 @@ def _format_worksheet(worksheet, rows):
         return
     num_cols = max(len(r) for r in rows) if rows else 1
     col_letter = chr(ord('A') + min(num_cols - 1, 25))
-    full_range = f"A1:{col_letter}{num_rows}"
 
     # Build all formatting in one batch call
     formats = []
 
-    # 1. Center everything
+    # 0. RESET: Clear ALL old formatting on a large range (covers previous exports)
     formats.append({
-        "range": full_range,
+        "range": f"A1:{col_letter}100",
+        "format": {
+            "backgroundColor": {"red": 1, "green": 1, "blue": 1},
+            "textFormat": {
+                "foregroundColor": {"red": 0, "green": 0, "blue": 0},
+                "bold": False,
+                "fontSize": 10,
+            },
+            "horizontalAlignment": "LEFT",
+        }
+    })
+
+    # 1. Center the actual data range
+    formats.append({
+        "range": f"A1:{col_letter}{num_rows}",
         "format": {
             "horizontalAlignment": "CENTER",
             "verticalAlignment": "MIDDLE",
