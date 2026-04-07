@@ -124,38 +124,35 @@ class handler(BaseHTTPRequestHandler):
             # MULTI-TAB EXPORT (new format with sections)
             # ══════════════════════════════════════════════════════
             if sections and len(sections) > 0:
+                # Step 1: Delete ALL existing worksheets except the first one
                 existing_worksheets = sh.worksheets()
-                existing_titles = [ws.title for ws in existing_worksheets]
+                for ws in existing_worksheets[1:]:
+                    try:
+                        sh.del_worksheet(ws)
+                    except Exception:
+                        pass
 
-                for idx, section in enumerate(sections):
-                    title = section.get("title", f"Sheet {idx + 1}")
-                    rows = section.get("rows", [])
+                # Step 2: Use the surviving first sheet for section[0]
+                first_ws = sh.worksheets()[0]
+                first_title = sections[0].get("title", "Sheet 1")
+                first_rows = sections[0].get("rows", [])
+                first_ws.clear()
+                try:
+                    first_ws.update_title(first_title)
+                except Exception:
+                    pass  # Title might already match
+                if first_rows:
+                    first_ws.update(values=first_rows, range_name='A1')
+                    _format_worksheet(first_ws, first_rows)
 
-                    # Create or reuse worksheet tab
-                    if title in existing_titles:
-                        ws = sh.worksheet(title)
-                        ws.clear()
-                    elif idx == 0 and len(existing_worksheets) > 0:
-                        # Rename the default first sheet
-                        ws = existing_worksheets[0]
-                        ws.update_title(title)
-                        ws.clear()
-                    else:
-                        ws = sh.add_worksheet(title=title, rows=max(len(rows) + 5, 20), cols=10)
-
-                    # Write data
+                # Step 3: Create fresh sheets for remaining sections
+                for idx in range(1, len(sections)):
+                    title = sections[idx].get("title", f"Sheet {idx + 1}")
+                    rows = sections[idx].get("rows", [])
+                    ws = sh.add_worksheet(title=title, rows=max(len(rows) + 5, 20), cols=10)
                     if rows:
                         ws.update(values=rows, range_name='A1')
                         _format_worksheet(ws, rows)
-
-                # Clean up old default sheets that we didn't use
-                current_section_titles = [s.get("title", f"Sheet {i+1}") for i, s in enumerate(sections)]
-                for ws in sh.worksheets():
-                    if ws.title not in current_section_titles:
-                        try:
-                            sh.del_worksheet(ws)
-                        except Exception:
-                            pass  # Can't delete the last sheet
 
             # ══════════════════════════════════════════════════════
             # LEGACY SINGLE-SHEET EXPORT (old format with rows)
