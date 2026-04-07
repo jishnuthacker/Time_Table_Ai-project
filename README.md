@@ -41,10 +41,9 @@ The project is now optimized for **Vercel Serverless Functions**.
 │   └── export_google_sheets.py # Serverless Function: Sheets Exporter
 ├── index.html                 # Frontend: Main UI
 ├── script.js                  # Frontend: Logic & API Integration
-├── style.css                  # Frontend: Premium Dark Theme
+├── server_local.py            # Local Dev: Standard Library Server
 ├── timetable_ga.py            # Core: Genetic Algorithm Engine
-├── vercel.json                # Vercel: Routing & Runtime Config
-├── server.py                  # Local: Standard Library Dev Server
+├── vercel.json                # Vercel: Routing & Build Config
 ├── requirements.txt           # Deps: gspread, google-auth
 ├── credentials.json           # Local only: Google API access (Ignored by Git)
 └── README.md
@@ -72,7 +71,7 @@ The project is now optimized for **Vercel Serverless Functions**.
     ```
 2.  **Run Locally**:
     ```bash
-    python server.py
+    python server_local.py
     ```
 3.  **Access**: Open `http://localhost:8080`.
 

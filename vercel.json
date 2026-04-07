@@ -1,13 +1,15 @@
 {
   "version": 2,
-  "functions": {
-    "api/*.py": {
-      "runtime": "@vercel/python"
-    }
-  },
-  "rewrites": [
-    { "source": "/api/run", "destination": "/api/run.py" },
-    { "source": "/api/export_google_sheets", "destination": "/api/export_google_sheets.py" },
-    { "source": "/(.*)", "destination": "/$1" }
+  "builds": [
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "script.js", "use": "@vercel/static" },
+    { "src": "style.css", "use": "@vercel/static" },
+    { "src": "api/run.py", "use": "@vercel/python" },
+    { "src": "api/export_google_sheets.py", "use": "@vercel/python" }
+  ],
+  "routes": [
+    { "src": "/api/run", "dest": "api/run.py" },
+    { "src": "/api/export_google_sheets", "dest": "api/export_google_sheets.py" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
