@@ -85,4 +85,4 @@ The project is now optimized for **Vercel Serverless Functions**.
 - **Rikin Parekh** - [@RikinParekh15147](https://github.com/RikinParekh15147)
 - **Shlok Patel** - [@ShlokPatel27](https://github.com/ShlokPatel27)
 
-<p align="center">Made with ❤️ and AI</p>
+<p align="center">Made with ❤️ and Genetic Algorithm (GA)</p>
