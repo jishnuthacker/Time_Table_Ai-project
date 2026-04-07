@@ -2,6 +2,8 @@
 
 An AI-powered **university course timetable generator** that uses a **Genetic Algorithm (GA)** to produce optimal, conflict-free schedules. Now professionally restructured for **One-Click Cloud Deployment** on Vercel.
 
+🔗 **[Live Demo: timetableai-seven.vercel.app](https://timetableai-seven.vercel.app/)**
+
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![JS](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
@@ -27,7 +29,7 @@ The project is now optimized for **Vercel Serverless Functions**.
 
 1.  **Fork/Clone** this repository to your GitHub account.
 2.  Go to the [Vercel Dashboard](https://vercel.com/new) and **Import** this project.
-3.  **(Optional but Recommended)**: Add your `credentials.json` content as an Environment Variable named `GOOGLE_CREDENTIALS_JSON` for secure Google Sheets exports.
+3.  **(Optional but Recommended)**: Add your Google Cloud Service Account JSON as an Environment Variable named `GOOGLE_CREDENTIALS_JSON` for secure Google Sheets exports.
 4.  **Deploy!** Vercel handles the Python backend (`api/`) and HTML frontend (`public/`) automatically.
 
 ---
@@ -47,7 +49,6 @@ The project is now optimized for **Vercel Serverless Functions**.
 ├── timetable_ga.py            # Core GA Engine
 ├── vercel.json                # Vercel Configuration
 ├── server_local.py            # Local Dev Server
-├── credentials.json           # Local only: Google API keys
 └── README.md
 ```
 
