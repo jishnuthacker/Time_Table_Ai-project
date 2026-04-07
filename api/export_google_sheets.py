@@ -141,32 +141,28 @@ class handler(BaseHTTPRequestHandler):
             # MULTI-TAB EXPORT (new format with sections)
             # ══════════════════════════════════════════════════════
             if sections and len(sections) > 0:
-                # Step 1: Delete ALL existing worksheets except the first one
-                existing_worksheets = sh.worksheets()
-                for ws in existing_worksheets[1:]:
-                    try:
-                        sh.del_worksheet(ws)
-                    except Exception:
-                        pass
+                existing = {ws.title: ws for ws in sh.worksheets()}
 
-                # Step 2: Use the surviving first sheet for section[0]
-                first_ws = sh.worksheets()[0]
-                first_title = sections[0].get("title", "Sheet 1")
-                first_rows = sections[0].get("rows", [])
-                first_ws.clear()
-                try:
-                    first_ws.update_title(first_title)
-                except Exception:
-                    pass  # Title might already match
-                if first_rows:
-                    first_ws.update(values=first_rows, range_name='A1')
-                    _format_worksheet(first_ws, first_rows)
+                for idx, section in enumerate(sections):
+                    title = section.get("title", f"Sheet {idx + 1}")
+                    rows = section.get("rows", [])
 
-                # Step 3: Create fresh sheets for remaining sections
-                for idx in range(1, len(sections)):
-                    title = sections[idx].get("title", f"Sheet {idx + 1}")
-                    rows = sections[idx].get("rows", [])
-                    ws = sh.add_worksheet(title=title, rows=max(len(rows) + 5, 20), cols=10)
+                    if title in existing:
+                        # Reuse existing sheet
+                        ws = existing[title]
+                        ws.clear()
+                    elif idx == 0 and "Sheet1" in existing:
+                        # Rename default "Sheet1" to our first section title
+                        ws = existing["Sheet1"]
+                        ws.update_title(title)
+                        ws.clear()
+                        del existing["Sheet1"]
+                    else:
+                        # Create new sheet
+                        ws = sh.add_worksheet(title=title, rows=max(len(rows) + 5, 20), cols=10)
+
+                    existing[title] = ws
+
                     if rows:
                         ws.update(values=rows, range_name='A1')
                         _format_worksheet(ws, rows)
