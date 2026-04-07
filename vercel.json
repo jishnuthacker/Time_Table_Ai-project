@@ -1,7 +1,13 @@
 {
   "version": 2,
+  "functions": {
+    "api/*.py": {
+      "runtime": "@vercel/python"
+    }
+  },
   "rewrites": [
     { "source": "/api/run", "destination": "/api/run.py" },
-    { "source": "/api/export_google_sheets", "destination": "/api/export_google_sheets.py" }
+    { "source": "/api/export_google_sheets", "destination": "/api/export_google_sheets.py" },
+    { "source": "/(.*)", "destination": "/$1" }
   ]
 }
