@@ -95,8 +95,41 @@ class handler(BaseHTTPRequestHandler):
                 if spreadsheet_id:
                     worksheet.clear()
                 worksheet.update(values=csv_rows, range_name=f'A1')
+            
+            # ─── PROFESSIONAL FORMATTING ─────────────────────────
+            num_rows = len(csv_rows)
+            num_cols = len(csv_rows[0]) if num_rows > 0 else 1
+            col_letter = chr(ord('A') + num_cols - 1)
+            
+            # 1. Bold all headers and center everything
+            worksheet.format(f"A1:{col_letter}{num_rows}", {
+                "horizontalAlignment": "CENTER",
+                "verticalAlignment": "MIDDLE",
+                "textFormat": {"fontSize": 10},
+            })
+            
+            # 2. Find and highlight "════" title rows and "Time" header rows
+            for i, row in enumerate(csv_rows):
+                row_idx = i + 1
+                first_cell = str(row[0]) if row else ""
                 
-            worksheet.format("A1:Z6", {"textFormat": {"bold": True}})
+                if "══" in first_cell:
+                    # Title row: Navy background, white bold text
+                    worksheet.format(f"A{row_idx}:{col_letter}{row_idx}", {
+                        "backgroundColor": {"red": 0.1, "green": 0.1, "blue": 0.4},
+                        "textFormat": {"foregroundColor": {"red": 1, "green": 1, "blue": 1}, "bold": True, "fontSize": 11}
+                    })
+                elif first_cell == "Time":
+                    # Header row: Light grey background, bold text
+                    worksheet.format(f"A{row_idx}:{col_letter}{row_idx}", {
+                        "backgroundColor": {"red": 0.9, "green": 0.9, "blue": 0.9},
+                        "textFormat": {"bold": True}
+                    })
+                elif row_idx % 2 == 0:
+                    # Alternating row colors (Zebra stripes)
+                    worksheet.format(f"A{row_idx}:{col_letter}{row_idx}", {
+                        "backgroundColor": {"red": 0.97, "green": 0.98, "blue": 1.0}
+                    })
 
             response_data = {"url": sh.url}
             self.send_response(200)
