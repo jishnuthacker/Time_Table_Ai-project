@@ -681,56 +681,76 @@ function drawFallbackChart(ctx, canvas, history) {
   ctx.closePath(); ctx.fill();
 }
 
-// ── BUILD TIMETABLE GRID ROWS ─────────────────────────────────────────────────
-function buildTimetableGridRows(data) {
+// ── BUILD TIMETABLE GRID (single section) ─────────────────────────────────────
+function buildGridForFilter(data, filterFn) {
   const schedule = data.schedule || [];
   const days = data.days || [];
   const slots = data.time_slots || [];
+  const rows = [];
+
+  // Header row: Time | Mon | Tue | Wed | ...
+  rows.push(['Time', ...days]);
+
+  slots.forEach(slot => {
+    const row = [slot];
+    days.forEach(day => {
+      const matches = schedule.filter(e =>
+        filterFn(e) && e.day === day && (e.time_label||'').startsWith(slot)
+      );
+      if (matches.length === 0) {
+        row.push('—');
+      } else {
+        const cellParts = matches.map(e => {
+          const parts = [e.course];
+          if (e.faculty) parts.push(e.faculty);
+          if (e.room)    parts.push(e.room);
+          if (e.type === 'lab' && e.time_label) parts.push(e.time_label);
+          return parts.join(' | ');
+        });
+        row.push(cellParts.join(' ; '));
+      }
+    });
+    rows.push(row);
+  });
+
+  return rows;
+}
+
+// ── BUILD ALL SECTIONS (for multi-sheet export) ───────────────────────────────
+function buildTimetableSections(data) {
   const batches = data.all_batches || batchList || [];
+  const sections = [];
+
+  // Section 1: Whole Division (Theory only)
+  sections.push({
+    title: 'Whole Division',
+    rows: buildGridForFilter(data, e => e.type === 'theory'),
+  });
+
+  // Section 2+: Each Batch (theory + that batch's labs)
+  batches.forEach(batch => {
+    sections.push({
+      title: batch,
+      rows: buildGridForFilter(data, e => {
+        if (e.type === 'theory') return true;
+        return (e.batch || '').toLowerCase() === batch.toLowerCase();
+      }),
+    });
+  });
+
+  return sections;
+}
+
+// ── BUILD FLAT ROWS (for CSV) ─────────────────────────────────────────────────
+function buildTimetableGridRows(data) {
+  const sections = buildTimetableSections(data);
+  const days = data.days || [];
   const allRows = [];
 
-  // ─── Helper: build a grid section for a given filter function ───
-  function buildSection(title, filterFn) {
-    // Title row
-    allRows.push([`═══ ${title} ═══`, ...days.map(() => '')]);
-    // Header row: Time | Mon | Tue | Wed | ...
-    allRows.push(['Time', ...days]);
-
-    slots.forEach(slot => {
-      const row = [slot];
-      days.forEach(day => {
-        const matches = schedule.filter(e =>
-          filterFn(e) && e.day === day && (e.time_label||'').startsWith(slot)
-        );
-        if (matches.length === 0) {
-          row.push('—');
-        } else {
-          const cellParts = matches.map(e => {
-            const parts = [e.course];
-            if (e.faculty) parts.push(e.faculty);
-            if (e.room)    parts.push(e.room);
-            if (e.type === 'lab' && e.time_label) parts.push(e.time_label);
-            return parts.join(' | ');
-          });
-          row.push(cellParts.join(' ; '));
-        }
-      });
-      allRows.push(row);
-    });
-
-    // Blank separator row
+  sections.forEach(sec => {
+    allRows.push([`═══ ${sec.title.toUpperCase()} ═══`, ...days.map(() => '')]);
+    sec.rows.forEach(r => allRows.push(r));
     allRows.push(days.map(() => '').concat(''));
-  }
-
-  // ─── Section 1: Whole Division (Theory) ───
-  buildSection('WHOLE DIVISION (Theory)', e => e.type === 'theory');
-
-  // ─── Section 2+: Each Batch ───
-  batches.forEach(batch => {
-    buildSection(`${batch.toUpperCase()}`, e => {
-      if (e.type === 'theory') return true; // theory applies to all batches
-      return (e.batch || '').toLowerCase() === batch.toLowerCase();
-    });
   });
 
   return allRows;
@@ -748,24 +768,24 @@ document.getElementById('btn-export')?.addEventListener('click', () => {
   a.download = 'timetable.csv'; a.click();
 });
 
-// ── SHEETS EXPORT ─────────────────────────────────────────────────────────────
+// ── SHEETS EXPORT (Multi-Tab) ─────────────────────────────────────────────────
 document.getElementById('btn-share')?.addEventListener('click', async () => {
   if (!lastResult) { alert('Generate a timetable first.'); return; }
   const ssId  = (document.getElementById('input-spreadsheet-id')?.value||'').trim();
   const fldId = (document.getElementById('input-folder-id')?.value||'').trim();
-  if (!ssId) return; // handled by inline validation
+  if (!ssId) return;
 
   const btn     = document.getElementById('btn-share');
   const textEl  = btn.querySelector('.btn-primary__text');
   const loadEl  = btn.querySelector('.btn-primary__loader');
   textEl.hidden = true; loadEl.hidden = false; btn.disabled = true;
 
-  const rows = buildTimetableGridRows(lastResult);
+  const sections = buildTimetableSections(lastResult);
   try {
     const res = await fetch('/api/export_google_sheets', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ rows, spreadsheet_id:ssId, folder_id:fldId }),
+      body: JSON.stringify({ sections, spreadsheet_id:ssId, folder_id:fldId }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error||`HTTP ${res.status}`);

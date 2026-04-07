@@ -11,7 +11,6 @@ try:
 except ImportError:
     GSPREAD_AVAILABLE = False
 
-# Add root directory to import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def _extract_id(value):
@@ -30,36 +29,66 @@ def _extract_id(value):
         return value
     return value
 
+def _format_worksheet(worksheet, rows):
+    """Apply professional formatting to a worksheet."""
+    num_rows = len(rows)
+    if num_rows == 0:
+        return
+    num_cols = max(len(r) for r in rows) if rows else 1
+    col_letter = chr(ord('A') + min(num_cols - 1, 25))
+
+    # Center everything
+    worksheet.format(f"A1:{col_letter}{num_rows}", {
+        "horizontalAlignment": "CENTER",
+        "verticalAlignment": "MIDDLE",
+        "textFormat": {"fontSize": 10},
+    })
+
+    # Format header row (row 1 = "Time | Mon | Tue ...")
+    worksheet.format(f"A1:{col_letter}1", {
+        "backgroundColor": {"red": 0.15, "green": 0.15, "blue": 0.45},
+        "textFormat": {
+            "foregroundColor": {"red": 1, "green": 1, "blue": 1},
+            "bold": True,
+            "fontSize": 11,
+        },
+    })
+
+    # Alternating row colors for data rows
+    for i in range(1, num_rows):
+        row_idx = i + 1
+        if i % 2 == 0:
+            worksheet.format(f"A{row_idx}:{col_letter}{row_idx}", {
+                "backgroundColor": {"red": 0.95, "green": 0.96, "blue": 1.0}
+            })
+
+
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         content_length = int(self.headers.get('Content-Length', 0))
         post_data = self.rfile.read(content_length)
         payload = json.loads(post_data.decode('utf-8'))
-        
+
+        # Support both old format (rows) and new format (sections)
+        sections = payload.get("sections", [])
         csv_rows = payload.get("rows", [])
         raw_folder = payload.get("folder_id")
         raw_spreadsheet = payload.get("spreadsheet_id")
-        
+
         folder_id = _extract_id(raw_folder)
         spreadsheet_id = _extract_id(raw_spreadsheet)
-        
+
         try:
             if not GSPREAD_AVAILABLE:
                 raise Exception("gspread library is not installed.")
-                
-            # If deploying on Vercel, it is recommended to use environment variables for secrets.
-            # But the existing logic expects credentials.json in the same folder.
-            # On Vercel, the credentials.json should be in the deployment directory.
-            # We first check if it exists in the root of the project.
-            
+
+            # ── Authenticate ──
             root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             creds_path = os.path.join(root_dir, 'credentials.json')
-            
+
             if not os.path.exists(creds_path):
-                # Fallback: check if it's set as an environment variable (for better security)
                 creds_json_content = os.environ.get('GOOGLE_CREDENTIALS_JSON')
                 if creds_json_content:
-                    # Parse from environment variable
                     creds_info = json.loads(creds_json_content)
                     scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
                     credentials = Credentials.from_service_account_info(creds_info, scopes=scopes)
@@ -68,9 +97,10 @@ class handler(BaseHTTPRequestHandler):
             else:
                 scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
                 credentials = Credentials.from_service_account_file(creds_path, scopes=scopes)
-            
+
             gc = gspread.authorize(credentials)
-            
+
+            # ── Open or create spreadsheet ──
             if spreadsheet_id:
                 try:
                     sh = gc.open_by_key(spreadsheet_id)
@@ -86,59 +116,64 @@ class handler(BaseHTTPRequestHandler):
                     if "quota" in str(e).lower():
                         raise Exception("Google Drive storage quota exceeded.")
                     raise e
-            
+
             if not spreadsheet_id:
                 sh.share(None, role='reader', type='anyone')
-            
-            worksheet = sh.get_worksheet(0)
-            if csv_rows:
+
+            # ══════════════════════════════════════════════════════
+            # MULTI-TAB EXPORT (new format with sections)
+            # ══════════════════════════════════════════════════════
+            if sections and len(sections) > 0:
+                existing_worksheets = sh.worksheets()
+                existing_titles = [ws.title for ws in existing_worksheets]
+
+                for idx, section in enumerate(sections):
+                    title = section.get("title", f"Sheet {idx + 1}")
+                    rows = section.get("rows", [])
+
+                    # Create or reuse worksheet tab
+                    if title in existing_titles:
+                        ws = sh.worksheet(title)
+                        ws.clear()
+                    elif idx == 0 and len(existing_worksheets) > 0:
+                        # Rename the default first sheet
+                        ws = existing_worksheets[0]
+                        ws.update_title(title)
+                        ws.clear()
+                    else:
+                        ws = sh.add_worksheet(title=title, rows=max(len(rows) + 5, 20), cols=10)
+
+                    # Write data
+                    if rows:
+                        ws.update(values=rows, range_name='A1')
+                        _format_worksheet(ws, rows)
+
+                # Clean up old default sheets that we didn't use
+                current_section_titles = [s.get("title", f"Sheet {i+1}") for i, s in enumerate(sections)]
+                for ws in sh.worksheets():
+                    if ws.title not in current_section_titles:
+                        try:
+                            sh.del_worksheet(ws)
+                        except Exception:
+                            pass  # Can't delete the last sheet
+
+            # ══════════════════════════════════════════════════════
+            # LEGACY SINGLE-SHEET EXPORT (old format with rows)
+            # ══════════════════════════════════════════════════════
+            elif csv_rows:
+                worksheet = sh.get_worksheet(0)
                 if spreadsheet_id:
                     worksheet.clear()
-                worksheet.update(values=csv_rows, range_name=f'A1')
-            
-            # ─── PROFESSIONAL FORMATTING ─────────────────────────
-            num_rows = len(csv_rows)
-            num_cols = len(csv_rows[0]) if num_rows > 0 else 1
-            col_letter = chr(ord('A') + num_cols - 1)
-            
-            # 1. Bold all headers and center everything
-            worksheet.format(f"A1:{col_letter}{num_rows}", {
-                "horizontalAlignment": "CENTER",
-                "verticalAlignment": "MIDDLE",
-                "textFormat": {"fontSize": 10},
-            })
-            
-            # 2. Find and highlight "════" title rows and "Time" header rows
-            for i, row in enumerate(csv_rows):
-                row_idx = i + 1
-                first_cell = str(row[0]) if row else ""
-                
-                if "══" in first_cell:
-                    # Title row: Navy background, white bold text
-                    worksheet.format(f"A{row_idx}:{col_letter}{row_idx}", {
-                        "backgroundColor": {"red": 0.1, "green": 0.1, "blue": 0.4},
-                        "textFormat": {"foregroundColor": {"red": 1, "green": 1, "blue": 1}, "bold": True, "fontSize": 11}
-                    })
-                elif first_cell == "Time":
-                    # Header row: Light grey background, bold text
-                    worksheet.format(f"A{row_idx}:{col_letter}{row_idx}", {
-                        "backgroundColor": {"red": 0.9, "green": 0.9, "blue": 0.9},
-                        "textFormat": {"bold": True}
-                    })
-                elif row_idx % 2 == 0:
-                    # Alternating row colors (Zebra stripes)
-                    worksheet.format(f"A{row_idx}:{col_letter}{row_idx}", {
-                        "backgroundColor": {"red": 0.97, "green": 0.98, "blue": 1.0}
-                    })
+                worksheet.update(values=csv_rows, range_name='A1')
+                _format_worksheet(worksheet, csv_rows)
 
             response_data = {"url": sh.url}
             self.send_response(200)
-            self.send_header("Header-name", "value")
             self.send_header('Content-type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(json.dumps(response_data).encode("utf-8"))
-            
+
         except Exception as e:
             self.send_response(500)
             self.send_header('Content-Type', 'application/json')
