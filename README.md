@@ -1,4 +1,4 @@
-# 🧬 TimetableAI — College Scheduler
+# 🧬 TimetableAI Scheduler
 
 An AI-powered **university course timetable generator** that uses a **Genetic Algorithm (GA)** to produce optimal, conflict-free schedules. Now professionally restructured for **One-Click Cloud Deployment** on Vercel.
 
@@ -81,8 +81,8 @@ The project is now optimized for **Vercel Serverless Functions**.
 ---
 
 ## 👥 Authors
-- **Jishnu Thacker** — [@jishnuthacker](https://github.com/jishnuthacker)
-- **Rikin Parekh** — [@RikinParekh15147](https://github.com/RikinParekh15147)
-- **Shlok Patel** — [@ShlokPatel27](https://github.com/ShlokPatel27)
+- **Jishnu Thacker** - [@jishnuthacker](https://github.com/jishnuthacker)
+- **Rikin Parekh** - [@RikinParekh15147](https://github.com/RikinParekh15147)
+- **Shlok Patel** - [@ShlokPatel27](https://github.com/ShlokPatel27)
 
 <p align="center">Made with ❤️ and AI</p>
