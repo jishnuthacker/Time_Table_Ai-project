@@ -1,35 +1,22 @@
 # Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-*.egg-info/
-dist/
-build/
-*.egg
+*.pyc
+*.pyo
 
-# Virtual environments
-venv/
-env/
-.env/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Logs
+# Logs and debug
 *.log
-server_debug.log
-server_error.log
-
-# Generated files
 fitness_convergence.png
 
-# Google credentials (sensitive)
-credentials.json
+# Vercel
+.vercel
+node_modules/
 
-# OS files
-.DS_Store
-Thumbs.db
+# Local env
+.env
+.venv/
+env/
+venv/
+
+# Google API
+credentials.json
+# credentials.json.example
