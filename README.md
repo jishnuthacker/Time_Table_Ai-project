@@ -1,4 +1,4 @@
-# 🧬 Timetable Scheduler — Genetic Algorithm
+# 🧬 Timetable Scheduler - Genetic Algorithm
 
 An AI-powered **university course timetable generator** that uses a **Genetic Algorithm (GA)** to produce conflict-free schedules. It features a modern web interface for configuring inputs, visualizing results, and exporting schedules.
 
